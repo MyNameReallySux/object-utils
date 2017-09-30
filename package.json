@@ -1,5 +1,5 @@
 {
-  "name": "@beautiful-code/string-utils",
+  "name": "@beautiful-code/object-utils",
   "version": "0.0.1",
   "description": "Library for manipulating objects.",
   "main": "./dist/index.js",
@@ -42,6 +42,7 @@
     "mocha": "^3.5.0"
   },
   "dependencies": {
+    "@beautiful-code/type-utils": "git+https://git@github.com/mynamereallysux/type-utils.git",
     "babel-polyfill": "^6.26.0"
   }
 }
