@@ -4,6 +4,103 @@ import { TypeUtils } from '@beautiful-code/type-utils'
 import { ObjectUtils } from '../src/ObjectUtils'
 
 describe('ObjectUtils', () => {
+	describe('can handle merging and extension of objects', () => {
+		describe('#extend', () => {
+			const TEST = {
+				OBJ: {
+					name: 'Joe',
+					age: 25
+				},
+				FUNCTION: {
+					name: 'Joe',
+					age: 25,
+					getName: () => TEST.OBJ.name	
+				}
+			}
+
+			const EXTEND = {
+				OBJ: {
+					job: 'Web Developer'
+				},
+				FUNCTION: {
+					getAge: () => TEST.OBJ.age
+				}
+			}
+
+			const EXPECTED = {
+				OBJ: {
+					name: 'Joe',
+					age: 25,
+					job: 'Web Developer'					
+				}, 
+				FUNCTION: 25
+			}
+
+			function testExtend(object, extension, expected){
+				// TODO(Chris): Fix TypeUtils 'get-type'
+				let type = TypeUtils.isObject(object) ? 'object' : 'non-object'
+
+				it(`is of type '${type}'`, () => expect(ObjectUtils.extend(object, extension)).deep.equals(expected))
+			}
+
+			function testExtendSubFunction(object, extension, expected, callback){
+				let type = TypeUtils.isObject(object) ? 'object' : 'non-object'
+
+				let extended = ObjectUtils.extend(object, extension)
+				let result = callback(extended)
+				it(`is of type '${type}' and has functions`, () => expect(result).deep.equals(expected))
+			}
+
+			describe('returns extended object if', () => {
+				testExtend(TEST.OBJ, EXTEND.OBJ, EXPECTED.OBJ)
+				testExtendSubFunction(TEST.FUNCTION, EXTEND.FUNCTION, EXPECTED.FUNCTION, (extended) => extended.getAge())
+			})
+		})
+	})
+	describe('can handle size of objects', () => {
+		describe('#size', () => {
+			function testSize(object, expected){
+				// TODO(Chris): Fix TypeUtils 'get-type'
+				let type = TypeUtils.isObject(object) ? 'object' : 'non-object'
+				let desc = type == 'object' ? ` (of size '${expected}')` : ''
+				it(`is type ${object}${desc}`, () => expect(ObjectUtils.size(object)).equals(expected))
+			}
+
+			function _generateObjectOfSize(size){
+				let object = {}
+
+				for(let i = 0; i < size; i++){
+					object[i + 1] = ''
+				}
+
+				return object
+			}
+
+			const TEST = {
+				ZERO: _generateObjectOfSize(0),
+				ONE: _generateObjectOfSize(1),
+				TWO: _generateObjectOfSize(2),
+				TEN: _generateObjectOfSize(10),
+				ONE_HUNDRED: _generateObjectOfSize(100)
+			}
+
+			const EXPECTED = {
+				ZERO: 0,
+				ONE: 1,
+				TWO: 2,
+				TEN: 10,
+				ONE_HUNDRED: 100
+			}
+
+			describe('returns object size if', () => {
+				testSize(TEST.ZERO, EXPECTED.ZERO)
+				testSize(TEST.ONE, EXPECTED.ONE)
+				testSize(TEST.TWO, EXPECTED.TWO)
+				testSize(TEST.TEN, EXPECTED.TEN)
+				testSize(TEST.ONE_HUNDRED, EXPECTED.ONE_HUNDRED)
+			})
+		})
+	})
 	describe('can handle swapping keys and values', () => {
 		const TEST = {
 			STRINGS: {
@@ -101,5 +198,4 @@ describe('ObjectUtils', () => {
 			})
 		})
 	})
-	
 })
