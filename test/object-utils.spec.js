@@ -4,6 +4,63 @@ import { TypeUtils } from '@beautiful-code/type-utils'
 import { ObjectUtils } from '../src/ObjectUtils'
 
 describe('ObjectUtils', () => {
+	describe('can handle manipulation of object properties', () => {
+		class TestClass {
+			static staticProp = 'static'
+			static staticProp2 = 'static2'
+
+			instanceProp3 = 'value3'
+			instanceProp4 = 'value4'
+
+			constructor(){
+				this.instanceProp = 'value'
+				this.instanceProp2 = 'value2'
+			}
+			one(){}
+			two(){}
+		}
+
+		let instance
+		beforeEach(() => {
+			instance = new TestClass()
+		})
+
+		describe('#getInstanceMethods', () => {
+			it(`should return 3 methods from 'TestClass'`, () => {
+				let test = ObjectUtils.getInstanceMethods(instance)
+				let expected = 3
+				expect(test.length).equals(expected)
+			})
+		})
+		describe('#getInstanceProps', () => {
+			it(`should return 4 instance props from 'TestClass'`, () => {
+				let test = ObjectUtils.getInstanceProps(instance)
+				let expected = 4
+				expect(test.length).equals(expected)
+			})
+		})
+		describe('#getStaticProps', () => {
+			it(`should return 5 static props from 'TestClass'`, () => {
+				let test = ObjectUtils.getStaticProps(TestClass)
+				let expected = 5
+				expect(test.length).equals(expected)
+			})
+		})	
+	})
+	// describe('can handle manipulation of object prototypes', () => {
+	// 	describe('#extendPrototype', () => {
+	// 		it(`should append properties to objects prototype'`, () => {
+	// 			let prototype = ObjectUtils.extendPrototype(String, {
+	// 				contains: (str) => {
+	// 					return this.indexOf(str) != -1
+	// 				}
+	// 			})
+	// 			let test = String.prototype.hasOwnProperty('contains')
+	// 			let expected = true
+	// 			expect(test.length).equals(expected)
+	// 		})
+	// 	})	
+	// })		
 	describe('can handle merging and extension of objects', () => {
 		describe('#extend', () => {
 			const TEST = {

@@ -9,7 +9,7 @@ import { TypeUtils } from '@beautiful-code/type-utils'
 ########################## */
 
 class ObjectUtils {
-	static OBJECT_PROTOTYPE = Object.prototype
+	static extendedPrototypes = new Map()
 
 	static modifyPrototype = () => {
 		Object.prototype.size = function(){
@@ -25,9 +25,44 @@ class ObjectUtils {
 		}
 	}
 
-	static resetPrototype() {
-		Object.prototype = ObjectUtils.OBJECT_PROTOTYPE
+	/* ##########################
+		Properties
+	########################## */
+
+	static getInstanceMethods(instance){
+		return Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
 	}
+
+	static getInstanceProps(instance){
+		return Object.entries(instance)
+	}
+	
+	static getStaticProps(clazz){
+		return Object.getOwnPropertyNames(clazz)
+	}
+
+	/* ##########################
+		Prototypes
+	########################## */
+	
+	static extendPrototype(clazz, extension){
+		if(!ObjectUtils.extendedPrototypes.has(clazz)){
+			ObjectUtils.extendedPrototypes.set(clazz, clazz.prototype)
+		}
+		ObjectUtils.extend(clazz.prototype, {
+			
+		})
+	}
+	
+	static resetPrototype(clazz){
+		if(ObjectUtils.extendedPrototypes.has(clazz)){
+			clazz.prototype = ObjectUtils.extendedPrototypes.get(clazz)
+		}
+	}
+
+	/* ##########################
+		Object Utils
+	########################## */
 
 	static extend = (object, ...objects) => {
 		for(let extension of objects){
