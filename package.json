@@ -1,6 +1,6 @@
 {
   "name": "@beautiful-code/object-utils",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Library for manipulating objects.",
   "main": "./dist/index.js",
   "scripts": {
