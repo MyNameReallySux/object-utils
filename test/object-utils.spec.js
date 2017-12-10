@@ -1,7 +1,15 @@
 import { expect } from 'chai'
 
+import { StringUtils } from '@beautiful-code/string-utils'
 import { TypeUtils } from '@beautiful-code/type-utils'
 import { ObjectUtils } from '../src/ObjectUtils'
+
+const print = console.log
+
+const formatKey = (key) => {
+	return StringUtils.toSnakeCase(key).toUpperCase()
+}
+
 
 describe('ObjectUtils', () => {
 	describe('can handle manipulation of object properties', () => {
@@ -60,67 +68,195 @@ describe('ObjectUtils', () => {
 	// 			expect(test.length).equals(expected)
 	// 		})
 	// 	})	
-	// })		
+	// })	
+	describe('can handle omission of object properties', () => {
+		const TESTS = {
+			OBJ: {
+				initial: {
+					name: 'The Boathouse',
+					address: '1600 Main St',
+					extra: 'omit me'
+				},
+				omit: 'extra',
+				expected: {
+					name: 'The Boathouse',
+					address: '1600 Main St'
+				}
+			}
+		}
+		describe('#omit', () => {
+			function testOmit(key){
+				let { initial, omit, expected } = TESTS[formatKey(key)]
+				let type = TypeUtils.getType(initial)
+
+				it(`is of type '${type}'`, () => {
+					let test = ObjectUtils.omit(initial, omit)
+					expect(test).deep.equals(expected)
+				})
+			}
+		})
+	})	
 	describe('can handle merging and extension of objects', () => {
-		describe('#extend', () => {
-			const TEST = {
-				OBJ: {
+		const TESTS = {
+			OBJ: {
+				initial: {
 					name: 'Joe',
 					age: 25
 				},
-				FUNCTION: {
-					name: 'Joe',
-					age: 25,
-					getName: () => TEST.OBJ.name	
-				}
-			}
-
-			const EXTEND = {
-				OBJ: {
+				extension: {
 					job: 'Web Developer'
 				},
-				FUNCTION: {
-					getAge: () => TEST.OBJ.age
-				}
-			}
-
-			const EXPECTED = {
-				OBJ: {
+				expected: {
 					name: 'Joe',
 					age: 25,
 					job: 'Web Developer'					
-				}, 
-				FUNCTION: 25
+				}
+			},
+			FUNC: {
+				initial: {
+					name: 'Joe',
+					age: 25,
+					getName: () => TESTS.OBJ.initial.name	
+				},
+				extension: {
+					getAge: () => TESTS.OBJ.initial.age
+				},
+				expected: 25
+			},
+			DEEP: {
+				initial: {
+					manager: {
+						name: 'Joe',
+						age: 25
+					},
+					employees: [{
+						name: 'John',
+						age: 22
+					}, {
+						name: 'Lisa',
+						age: 21
+					}]
+				},
+				extension: {
+					// TODO(Chris): Will not copy properly if missing one of the initial keys (ex, remove name and it will fail)
+					manager: {
+						name: "Joe",
+						age: 26
+					},
+					employees: [{
+						name: 'Elsa',
+						age: 45
+					}]
+				},
+				expected: {
+					manager: {
+						name: 'Joe',
+						age: 26
+					},
+					employees: [{
+						name: 'John',
+						age: 22
+					}, {
+						name: 'Lisa',
+						age: 21
+					}, {
+						name: 'Elsa',
+						age: 45
+					}]
+				}
+			}
+		}
+
+		describe('#extend', () => {
+			function testExtend(key){
+				let { initial, extension, expected } = TESTS[formatKey(key)]
+				let type = TypeUtils.getType(initial)
+
+				it(`is of type '${type}'`, () => {
+					let test = ObjectUtils.extend(initial, extension)
+					expect(test).deep.equals(expected)
+				})
 			}
 
-			function testExtend(object, extension, expected){
-				// TODO(Chris): Fix TypeUtils 'get-type'
-				let type = TypeUtils.isObject(object) ? 'object' : 'non-object'
+			function testExtendSubFunction(key, callback){
+				let { initial, extension, expected } = TESTS[formatKey(key)]
+				let type = TypeUtils.getType(initial)
 
-				it(`is of type '${type}'`, () => expect(ObjectUtils.extend(object, extension)).deep.equals(expected))
-			}
-
-			function testExtendSubFunction(object, extension, expected, callback){
-				let type = TypeUtils.isObject(object) ? 'object' : 'non-object'
-
-				let extended = ObjectUtils.extend(object, extension)
-				let result = callback(extended)
-				it(`is of type '${type}' and has functions`, () => expect(result).deep.equals(expected))
+				it(`is of type '${type}' and has functions`, () => {
+					let extended = ObjectUtils.extend(initial, extension)
+					let test = callback(extended)
+					expect(test).deep.equals(expected)
+				})
 			}
 
 			describe('returns extended object if', () => {
-				testExtend(TEST.OBJ, EXTEND.OBJ, EXPECTED.OBJ)
-				testExtendSubFunction(TEST.FUNCTION, EXTEND.FUNCTION, EXPECTED.FUNCTION, (extended) => extended.getAge())
+				testExtend('obj')
+				testExtendSubFunction('func', (extended) => extended.getAge())
+			})
+		})
+		describe('#merge', () => {
+			function testMerge(key){
+				let { initial, extension, expected } = TESTS[formatKey(key)]
+				let type = TypeUtils.getType(initial)
+
+				it(`is of type '${type}'`, () => {
+					let test = ObjectUtils.merge(initial, extension)
+					expect(test).deep.equals(expected)
+				})
+			}
+
+			function testMergeSubFunction(key, callback){
+				let { initial, extension, expected } = TESTS[formatKey(key)]
+				let type = TypeUtils.getType(initial)
+
+				
+				it(`is of type '${type}' and has functions`, () => {
+					let extended = ObjectUtils.merge(initial, extension)
+					let test = callback(extended)
+					expect(test).deep.equals(expected)
+				})
+			}
+
+			describe('returns merged object if', () => {
+				testMerge('obj')
+				testMergeSubFunction('func', (extended) => extended.getAge())
+			})
+		})
+		describe('#mergeDeep', () => {
+			function testMergeDeep(key){
+				let { initial, extension, expected } = TESTS[formatKey(key)]
+				let type = TypeUtils.getType(initial)
+
+				it(`is of type '${type}', with no functions`, () => {
+					let test = ObjectUtils.mergeDeep(initial, extension)
+					expect(test).deep.equals(expected)
+				})
+			}
+
+			describe('returns deeply merged object if', () => {
+				testMergeDeep('deep')
 			})
 		})
 	})
 	describe('can handle size of objects', () => {
 		describe('#size', () => {
-			function testSize(object, expected){
-				// TODO(Chris): Fix TypeUtils 'get-type'
-				let type = TypeUtils.isObject(object) ? 'object' : 'non-object'
-				let desc = type == 'object' ? ` (of size '${expected}')` : ''
-				it(`is type ${object}${desc}`, () => expect(ObjectUtils.size(object)).equals(expected))
+			const TESTS = {
+				ZERO: {
+					initial: _generateObjectOfSize(0),
+					expected: 0
+				},
+				ONE: {
+					initial: _generateObjectOfSize(1),
+					expected: 1
+				},
+				TEN: {
+					initial: _generateObjectOfSize(10),
+					expected: 10
+				},
+				ONE_HUNDRED: {
+					initial: _generateObjectOfSize(100),
+					expected: 100
+				}
 			}
 
 			function _generateObjectOfSize(size){
@@ -133,28 +269,22 @@ describe('ObjectUtils', () => {
 				return object
 			}
 
-			const TEST = {
-				ZERO: _generateObjectOfSize(0),
-				ONE: _generateObjectOfSize(1),
-				TWO: _generateObjectOfSize(2),
-				TEN: _generateObjectOfSize(10),
-				ONE_HUNDRED: _generateObjectOfSize(100)
-			}
+			function testSize(key){
+				let { initial, expected } = TESTS[formatKey(key)]
+				let type = TypeUtils.getType(initial)
+				let desc = type == 'object' ? ` (of size '${expected}')` : ''
 
-			const EXPECTED = {
-				ZERO: 0,
-				ONE: 1,
-				TWO: 2,
-				TEN: 10,
-				ONE_HUNDRED: 100
+				it(`is type '${type}${desc}'`, () => {
+					let test = ObjectUtils.size(initial)
+					expect(test).equals(expected)
+				})
 			}
 
 			describe('returns object size if', () => {
-				testSize(TEST.ZERO, EXPECTED.ZERO)
-				testSize(TEST.ONE, EXPECTED.ONE)
-				testSize(TEST.TWO, EXPECTED.TWO)
-				testSize(TEST.TEN, EXPECTED.TEN)
-				testSize(TEST.ONE_HUNDRED, EXPECTED.ONE_HUNDRED)
+				testSize('zero')
+				testSize('one')
+				testSize('ten')
+				testSize('one hundred')				
 			})
 		})
 	})
