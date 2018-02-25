@@ -228,7 +228,7 @@ class ObjectUtils {
 let clean = 		ObjectUtils.clean,
 	exclude = 		ObjectUtils.extend,
 	extend = 		ObjectUtils.extend,
-	isSwappable = 	ObjectUtils.isSwappable
+	isSwappable = 	ObjectUtils.isSwappable,
 	merge = 		ObjectUtils.merge,
 	omit = 			ObjectUtils.omit,
 	setDeep =		ObjectUtils.setDeep,
