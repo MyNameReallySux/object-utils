@@ -1,13 +1,15 @@
 {
   "name": "@beautiful-code/object-utils",
-  "version": "0.0.6",
+  "version": "0.2.0",
   "description": "Library for manipulating objects.",
   "main": "./dist/index.js",
   "scripts": {
+    "start": "babel -w ./src --out-dir ./dist",
     "build": "babel ./src --out-dir ./dist",
-    "test": "mocha",
+    "generate:docs": "jsdoc -c ./config/jsdoc.config.json",
+    "test": "./node_modules/.bin/_mocha",
     "test:watch": "npm run test -- --watch",
-    "prepublishOnly": "npm run build && npm run test"
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,7 @@
     "babel-preset-stage-0": "^6.24.1",
     "chai": "^4.1.2",
     "eslint": "^4.5.0",
+    "minami": "git://github.com/mynamereallysux/minami.git#sort-data",
     "mocha": "^3.5.0"
   },
   "dependencies": {

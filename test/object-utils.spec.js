@@ -10,7 +10,6 @@ const formatKey = (key) => {
 	return StringUtils.toSnakeCase(key).toUpperCase()
 }
 
-
 describe('ObjectUtils', () => {
 	describe('can handle manipulation of object properties', () => {
 		class TestClass {
@@ -94,6 +93,18 @@ describe('ObjectUtils', () => {
 					expect(test).deep.equals(expected)
 				})
 			}
+
+			function testOmitFunction(key){
+				let { initial, omit, expected } = TESTS[formatKey(key)]
+				let type = TypeUtils.getType(initial)
+
+				it(`is of type '${type}'`, () => {
+					let test = ObjectUtils.omit(initial, omit, () =>{
+
+					})
+					expect(test).deep.equals(expected)
+				})
+			}
 		})
 	})	
 	describe('can handle merging and extension of objects', () => {
@@ -167,39 +178,39 @@ describe('ObjectUtils', () => {
 			}
 		}
 
-		describe('#extend', () => {
-			function testExtend(key){
+		describe('#assign', () => {
+			function testAssign(key){
 				let { initial, extension, expected } = TESTS[formatKey(key)]
 				let type = TypeUtils.getType(initial)
 
 				it(`is of type '${type}'`, () => {
-					let test = ObjectUtils.extend(initial, extension)
+					let test = ObjectUtils.merge(initial, extension)
 					expect(test).deep.equals(expected)
 				})
 			}
 
-			function testExtendSubFunction(key, callback){
+			function testAssignSubFunction(key, callback){
 				let { initial, extension, expected } = TESTS[formatKey(key)]
 				let type = TypeUtils.getType(initial)
 
 				it(`is of type '${type}' and has functions`, () => {
-					let extended = ObjectUtils.extend(initial, extension)
+					let extended = ObjectUtils.merge(initial, extension)
 					let test = callback(extended)
 					expect(test).deep.equals(expected)
 				})
 			}
 
 			describe('returns extended object if', () => {
-				testExtend('obj')
-				testExtendSubFunction('func', (extended) => extended.getAge())
+				testAssign('obj')
+				testAssignSubFunction('func', (extended) => extended.getAge())
 			})
 		})
 		describe('#merge', () => {
-			function testMerge(key){
+			function testMerge(key, desc){
 				let { initial, extension, expected } = TESTS[formatKey(key)]
 				let type = TypeUtils.getType(initial)
 
-				it(`is of type '${type}'`, () => {
+				it(desc ? `is ${desc}` : `is of type '${type}'`, () => {
 					let test = ObjectUtils.merge(initial, extension)
 					expect(test).deep.equals(expected)
 				})
@@ -219,22 +230,8 @@ describe('ObjectUtils', () => {
 
 			describe('returns merged object if', () => {
 				testMerge('obj')
+				testMerge('deep', 'deeply nested \'object\'')
 				testMergeSubFunction('func', (extended) => extended.getAge())
-			})
-		})
-		describe('#mergeDeep', () => {
-			function testMergeDeep(key){
-				let { initial, extension, expected } = TESTS[formatKey(key)]
-				let type = TypeUtils.getType(initial)
-
-				it(`is of type '${type}', with no functions`, () => {
-					let test = ObjectUtils.mergeDeep(initial, extension)
-					expect(test).deep.equals(expected)
-				})
-			}
-
-			describe('returns deeply merged object if', () => {
-				testMergeDeep('deep')
 			})
 		})
 	})
@@ -285,6 +282,58 @@ describe('ObjectUtils', () => {
 				testSize('one')
 				testSize('ten')
 				testSize('one hundred')				
+			})
+		})
+	})
+	describe('can handle exclusion of keys and values', () => {
+		describe('#exclude', () => {
+			describe(`returns object with omitted values if`, () => {
+				it(`is an object with value existing`, () => {
+					let test = { a: 1, b: 2, c: 5 }
+					let expected = { a: 1, b: 2}
+					let result = ObjectUtils.exclude(test, 5)
+					expect(result).deep.equals(expected)
+				})
+				it(`is an object with value not existing`, () => {
+					let test = { a: 1, b: 2, c: 5 }
+					let expected = { a: 1, b: 2, c: 5 }
+					let result = ObjectUtils.exclude(test, 4)
+					expect(result).deep.equals(expected)
+				})
+				it(`is an object with multiple values existing`, () => {
+					let test = { a: 1, b: 2, c: 5, d: 2 }
+					let expected = { a: 1, c: 5 }
+					let result = ObjectUtils.exclude(test, 2)
+					expect(result).deep.equals(expected)
+				})
+				it(`is an object and is passed multiple keys`, () => {
+					let test = { a: 1, b: 2, c: 5, d: 3 }
+					let expected = { a: 1, d: 3 }
+					let result = ObjectUtils.exclude(test, [2, 5])
+					expect(result).deep.equals(expected)
+				})
+			})
+		})
+		describe('#omit', () => {
+			describe(`returns object with omitted key if`, () => {
+				it(`is an object with key existing`, () => {
+					let test = { a: 1, b: 2, c: 5 }
+					let expected = { a: 1, b: 2 }
+					let result = ObjectUtils.omit(test, 'c')
+					expect(result).deep.equals(expected)
+				})
+				it(`is an object with key not existing`, () => {
+					let test = { a: 1, b: 2, c: 5 }
+					let expected = { a: 1, b: 2, c: 5 }
+					let result = ObjectUtils.omit(test, 'd')
+					expect(result).deep.equals(expected)
+				})
+				it(`is an object and is passed multiple keys`, () => {
+					let test = { a: 1, b: 2, c: 5, d: 3 }
+					let expected = { a: 1, d: 3 }
+					let result = ObjectUtils.omit(test, ['b', 'c'])
+					expect(result).deep.equals(expected)
+				})
 			})
 		})
 	})

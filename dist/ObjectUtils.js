@@ -3,7 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.isSwappable = exports.swap = exports.size = exports.setDeep = exports.omit = exports.mergeDeep = exports.merge = exports.extend = exports.ObjectUtils = undefined;
+exports.swap = exports.size = exports.setDeep = exports.merge = exports.omit = exports.isSwappable = exports.extend = exports.exclude = exports.clean = exports.ObjectUtils = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -21,6 +23,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   Class Definition
 ########################## */
 
+/** 
+ * The ObjectUtils class has various methods related to managing, manipulating, and configuring objects.
+ * 
+ * @author Chris Coppola <mynamereallysux@gmail.com>
+ */
 var ObjectUtils = function () {
 	function ObjectUtils() {
 		_classCallCheck(this, ObjectUtils);
@@ -72,6 +79,28 @@ var ObjectUtils = function () {
   	Object Utils
   ########################## */
 
+		/** 
+      * Removes all null values from an object. Null values are 'undefined', 'null', or an empty string.
+      * 
+      * @param {!Object} object Object that should be cleaned.
+   * @param {?Array} exclusions List of values that should be removed.
+   * @returns {Object} Returns an object without any null values.
+      * 
+   * @function
+   * @public
+      */
+
+
+		/** 
+      * Extends an object with a series of other objects, taking into account and ignoring null values in the source object and extension objects.
+      * 
+      * @param {Object} source Object that will be extended.
+   * @returns {Object} Returns a merged object.
+      * 
+   * @function
+   * @public
+      */
+
 	}]);
 
 	return ObjectUtils;
@@ -104,8 +133,8 @@ ObjectUtils.modifyPrototype = function () {
 		ObjectUtils.setDeep(this, value, path);
 	};
 
-	Object.prototype.omit = function (props, fcn) {
-		ObjectUtils.omit(this, props, fcn);
+	Object.prototype.omit = function (props, fn) {
+		ObjectUtils.omit(this, props, fn);
 	};
 
 	Object.prototype.size = function () {
@@ -121,125 +150,104 @@ ObjectUtils.modifyPrototype = function () {
 	};
 };
 
-ObjectUtils.extend = function (object) {
-	for (var _len2 = arguments.length, objects = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-		objects[_key2 - 1] = arguments[_key2];
-	}
-
-	var _iteratorNormalCompletion = true;
-	var _didIteratorError = false;
-	var _iteratorError = undefined;
-
-	try {
-		for (var _iterator = objects[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-			var extension = _step.value;
-			var _iteratorNormalCompletion2 = true;
-			var _didIteratorError2 = false;
-			var _iteratorError2 = undefined;
-
-			try {
-				for (var _iterator2 = Object.entries(extension)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-					var _step2$value = _slicedToArray(_step2.value, 2),
-					    name = _step2$value[0],
-					    property = _step2$value[1];
-
-					if (extension.hasOwnProperty(name)) {
-						object[name] = property;
-					}
-				}
-			} catch (err) {
-				_didIteratorError2 = true;
-				_iteratorError2 = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion2 && _iterator2.return) {
-						_iterator2.return();
-					}
-				} finally {
-					if (_didIteratorError2) {
-						throw _iteratorError2;
-					}
-				}
-			}
-		}
-	} catch (err) {
-		_didIteratorError = true;
-		_iteratorError = err;
-	} finally {
-		try {
-			if (!_iteratorNormalCompletion && _iterator.return) {
-				_iterator.return();
-			}
-		} finally {
-			if (_didIteratorError) {
-				throw _iteratorError;
-			}
-		}
-	}
-
-	return object;
+ObjectUtils.clean = function (object) {
+	var exclusions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [undefined, null, ''];
+	return ObjectUtils.exclude(object, exclusions);
 };
 
-ObjectUtils.merge = function () {
-	for (var _len3 = arguments.length, objects = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-		objects[_key3] = arguments[_key3];
+ObjectUtils.exclude = function () {
+	var object = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	var exclusions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+	var fn = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {
+		return false;
+	};
+
+	if ((0, _typeUtils.isFunction)(exclusions)) {
+		fn = exclusions;
+		exclusions = [];
 	}
+	if (!(0, _typeUtils.isArray)(exclusions)) exclusions = [exclusions];
 
-	return Object.assign.apply(Object, [{}].concat(objects));
-};
-
-ObjectUtils.mergeDeep = function (target) {
-	for (var _len4 = arguments.length, sources = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
-		sources[_key4 - 1] = arguments[_key4];
-	}
-
-	if (!sources.length) return target;
-	var source = sources.shift();
-
-	if ((0, _typeUtils.isObject)(target) && (0, _typeUtils.isObject)(source)) {
-		for (var key in source) {
-			if ((0, _typeUtils.isObject)(source[key])) {
-				if (!target[key]) Object.assign(target, _defineProperty({}, key, {}));
-				ObjectUtils.mergeDeep(target[key], source[key]);
-			}if ((0, _typeUtils.isArray)(source[key]) && (0, _typeUtils.isArray)(target[key])) {
-				target[key] = target[key].concat(source[key]);
-			} else {
-				Object.assign(target, _defineProperty({}, key, source[key]));
-			}
-		}
-	}
-
-	return ObjectUtils.mergeDeep.apply(ObjectUtils, [target].concat(sources));
-};
-
-ObjectUtils.omit = function (obj, props, func) {
-	if (!(0, _typeUtils.isObject)(obj)) return {};
-
-	if ((0, _typeUtils.isFunction)(props)) {
-		func = props;
-		props = [];
-	}
-
-	if ((0, _typeUtils.isString)(props)) {
-		props = [props];
-	}
-
-	if (!(0, _typeUtils.isArray)(props)) return {};
-
-	return Object.entries(obj).reduce(function (collection, _ref) {
+	return Object.entries(object).filter(function (_ref) {
 		var _ref2 = _slicedToArray(_ref, 2),
 		    key = _ref2[0],
 		    value = _ref2[1];
 
-		var propsDoNotExist = !props,
-		    keyIsInProps = props.indexOf(key) === -1,
-		    lastParamIsNotFunction = !(0, _typeUtils.isFunction)(func) || func(value, key, obj);
+		return !exclusions.includes(value);
+	}).reduce(function (object, _ref3) {
+		var _ref4 = _slicedToArray(_ref3, 2),
+		    key = _ref4[0],
+		    value = _ref4[1];
 
-		if (propsDoNotExist || keyIsInProps && lastParamIsNotFunction) {
-			collection[key] = value;
-		}
+		return _extends({}, object, _defineProperty({}, key, value));
+	}, {});
+};
+
+ObjectUtils.extend = function (source) {
+	for (var _len2 = arguments.length, extensions = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+		extensions[_key2 - 1] = arguments[_key2];
+	}
+
+	if (!_typeUtils.isObject) return {};
+	if (!extensions.length) return source;
+	return ObjectUtils.clean(Object.assign.apply(Object, [source].concat(extensions)));
+};
+
+ObjectUtils.merge = function (source) {
+	for (var _len3 = arguments.length, extensions = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+		extensions[_key3 - 1] = arguments[_key3];
+	}
+
+	if (!(0, _typeUtils.isObject)(source)) return {};
+	if (!extensions.length) return source;
+
+	return extensions.reduce(function (collection, extension) {
+		!(0, _typeUtils.isObject)(extension) ? collection : Object.entries(extension).filter(function (_ref5) {
+			var _ref6 = _slicedToArray(_ref5, 2),
+			    key = _ref6[0],
+			    value = _ref6[1];
+
+			return value !== undefined;
+		}).forEach(function (_ref7) {
+			var _ref8 = _slicedToArray(_ref7, 2),
+			    key = _ref8[0],
+			    value = _ref8[1];
+
+			var result = {};
+			if ((0, _typeUtils.isObject)(value) && (0, _typeUtils.isObject)(source[key])) result = ObjectUtils.merge(source[key], value);else if ((0, _typeUtils.isArray)(value) && (0, _typeUtils.isArray)(source[key])) result = source[key].concat(value);else result = value;
+
+			collection = Object.assign({}, collection, _defineProperty({}, key, result));
+		});
 
 		return collection;
+	}, ObjectUtils.clean(source));
+};
+
+ObjectUtils.omit = function () {
+	var object = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	var omissions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+	var fn = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {
+		return false;
+	};
+
+	if ((0, _typeUtils.isFunction)(omissions)) {
+		fn = omissions;
+		omissions = [];
+	}
+	if (!(0, _typeUtils.isArray)(omissions)) omissions = [omissions];
+
+	return Object.entries(object).filter(function (_ref9) {
+		var _ref10 = _slicedToArray(_ref9, 2),
+		    key = _ref10[0],
+		    value = _ref10[1];
+
+		return !omissions.includes(key) || fn();
+	}).reduce(function (object, _ref11) {
+		var _ref12 = _slicedToArray(_ref11, 2),
+		    key = _ref12[0],
+		    value = _ref12[1];
+
+		return _extends({}, object, _defineProperty({}, key, value));
 	}, {});
 };
 
@@ -280,10 +288,10 @@ ObjectUtils.size = function (obj) {
 ObjectUtils.swap = function (obj) {
 	if (!(0, _typeUtils.isObject)(obj)) throw new Error('Tried to swap a non-object. Type was ' + (0, _typeUtils.getType)(obj) + '.');
 
-	return Object.entries(obj).reduce(function (swapped, _ref3) {
-		var _ref4 = _slicedToArray(_ref3, 2),
-		    key = _ref4[0],
-		    value = _ref4[1];
+	return Object.entries(obj).reduce(function (swapped, _ref13) {
+		var _ref14 = _slicedToArray(_ref13, 2),
+		    key = _ref14[0],
+		    value = _ref14[1];
 
 		var hasValidPropTypes = (0, _typeUtils.isString)(value) || (0, _typeUtils.isNumber)(value);
 		if (!hasValidPropTypes) throw new Error('Tried to swap an object with non-string or non-number properties. Type was ' + (0, _typeUtils.getType)(value) + '.');
@@ -305,22 +313,20 @@ ObjectUtils.isSwappable = function (obj) {
 	return set.size == Object.keys(obj).length;
 };
 
-var extend = ObjectUtils.extend,
-    merge = ObjectUtils.merge,
-    mergeDeep = ObjectUtils.mergeDeep,
-    omit = ObjectUtils.omit,
-    setDeep = ObjectUtils.setDeep,
-    size = ObjectUtils.size,
-    swap = ObjectUtils.swap,
+var clean = ObjectUtils.clean,
+    exclude = ObjectUtils.extend,
+    extend = ObjectUtils.extend,
     isSwappable = ObjectUtils.isSwappable;
+exports.merge = merge = ObjectUtils.merge, exports.omit = omit = ObjectUtils.omit, exports.setDeep = setDeep = ObjectUtils.setDeep, exports.size = size = ObjectUtils.size, exports.swap = swap = ObjectUtils.swap;
 
 exports.default = ObjectUtils;
 exports.ObjectUtils = ObjectUtils;
+exports.clean = clean;
+exports.exclude = exclude;
 exports.extend = extend;
-exports.merge = merge;
-exports.mergeDeep = mergeDeep;
+exports.isSwappable = isSwappable;
 exports.omit = omit;
+exports.merge = merge;
 exports.setDeep = setDeep;
 exports.size = size;
 exports.swap = swap;
-exports.isSwappable = isSwappable;

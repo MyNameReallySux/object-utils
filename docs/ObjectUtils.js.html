@@ -1,4 +1,45 @@
-/* ##########################
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ObjectUtils.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ObjectUtils.html">ObjectUtils</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ObjectUtils.html#clean">clean</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">ObjectUtils.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* ##########################
   Imports
 ########################## */
 
@@ -11,7 +52,7 @@ import { getType, isArray, isFunction, isObject, isNumber, isString } from '@bea
 /** 
  * The ObjectUtils class has various methods related to managing, manipulating, and configuring objects.
  * 
- * @author Chris Coppola <mynamereallysux@gmail.com>
+ * @author Chris Coppola &lt;mynamereallysux@gmail.com>
  */
 class ObjectUtils {
 	static extendedPrototypes = new Map()
@@ -33,8 +74,8 @@ class ObjectUtils {
 			ObjectUtils.setDeep(this, value, path)
 		}
 
-		Object.prototype.omit = function(props, fn){
-			ObjectUtils.omit(this, props, fn)
+		Object.prototype.omit = function(props, fcn){
+			ObjectUtils.omit(this, props, fcn)
 		}
 
 		Object.prototype.size = function(){
@@ -92,62 +133,50 @@ class ObjectUtils {
 	/** 
      * Removes all null values from an object. Null values are 'undefined', 'null', or an empty string.
      * 
-     * @param {!Object} object Object that should be cleaned.
-	 * @param {?Array} exclusions List of values that should be removed.
-	 * @returns {Object} Returns an object without any null values.
+     * @param {Object} object Object that should be cleaned.
+	 * @returns {Object} Returns a object without any null values.
      * 
 	 * @function
 	 * @public
      */
-	static clean = (object, exclusions = [undefined, null, '']) => ObjectUtils.exclude(object, exclusions)
+	static clean = (object) => ObjectUtils.without(object, [undefined, null, ''])
 
-	static exclude = (object = {}, exclusions = [], fn = () => false) => {
-		if(isFunction(exclusions)){
-			fn = exclusions
-			exclusions = []
+	static defaults = (defaults, object) => {
+		Object.keys(object).filter((key) => key !== undefined)
+	}
+
+	static extend = (object, ...objects) => {
+		for(let extension of objects){
+			for(let [name, property] of Object.entries(extension)){
+				if(extension.hasOwnProperty(name)){					
+					object[name] = property
+
+				}
+			}
 		}
-		if(!isArray(exclusions)) exclusions = [exclusions]
 
-		return Object.entries(object)
-			.filter(([key, value]) => !exclusions.includes(value))
-			.reduce((object, [key, value]) => ({...object, [key]: value}), {})
+		return object
 	}
 
-	/** 
-     * Extends an object with a series of other objects, taking into account and ignoring null values in the source object and extension objects.
-     * 
-     * @param {Object} source Object that will be extended.
-	 * @returns {Object} Returns a merged object.
-     * 
-	 * @function
-	 * @public
-     */
-	static extend = (source, ...extensions) => {
-		if(!isObject) return {}
-		if(!extensions.length) return source
-		return ObjectUtils.clean(Object.assign(source, ...extensions))
-	}
-
-	static merge = (source, ...extensions) => {
-		if(!isObject(source)) return {}
-		if(!extensions.length) return source
-
-		return extensions.reduce((collection, extension) => {
-			!isObject(extension)
-				? collection 
-				: Object.entries(extension)
-				.filter(([key, value]) => value !== undefined)
-				.forEach(([key, value]) => {
-					let result = {}
-					if(isObject(value) && isObject(source[key])) 	result = ObjectUtils.merge(source[key], value)
-					else if(isArray(value) && isArray(source[key])) result = source[key].concat(value)
-					else 											result = value
-
-					collection = Object.assign({}, collection, { [key]: result })
-				})
-
-			return collection
-		}, ObjectUtils.clean(source))
+	static merge = (...objects) => Object.assign({}, ...objects)
+	static mergeDeep = (target, ...sources) => {
+		if(!sources.length) return target
+		const source = sources.shift()
+	
+		if(isObject(target) &amp;&amp; isObject(source)) {
+			for(const key in source) {
+				if(isObject(source[key])) {
+					if(!target[key]) Object.assign(target, { [key]: {} })
+					ObjectUtils.mergeDeep(target[key], source[key])
+				} if(isArray(source[key]) &amp;&amp; isArray(target[key])){
+					target[key] = target[key].concat(source[key])
+				} else {
+					Object.assign(target, {[key]: source[key]})
+				}
+			}
+		}
+	  
+		return ObjectUtils.mergeDeep(target, ...sources);
 	}
 
 	static omit = (object = {}, omissions = [], fn = () => false) => {
@@ -155,11 +184,15 @@ class ObjectUtils {
 			fn = omissions
 			omissions = []
 		}
-		if(!isArray(omissions)) omissions = [omissions]
+		return Object.keys(object).filter((key) => !omissions.includes(key) || fn())
+	}
 
-		return Object.entries(object)
-			.filter(([key, value]) => !omissions.includes(key) || fn())
-			.reduce((object, [key, value]) => ({...object, [key]: value}), {})
+	static without = (object = {}, exclusions = [], fn = () => false) => {
+		if(isFunction(exclusions)){
+			fn = exclusions
+			exclusions = []
+		}
+		return Object.values(object).filter((value) => !exclusions.includes(value))	
 	}
 
 	static setDeep = (object = {}, value, path) => {
@@ -174,7 +207,7 @@ class ObjectUtils {
 			match = regexp.exec(part)
 			if (match !== null) context = context[match[1]][match[3]]
 			else {
-				if(context && !context.hasOwnProperty(part)) 
+				if(context &amp;&amp; !context.hasOwnProperty(part)) 
 					context[part] = {}
 	
 				context = context[part]
@@ -206,7 +239,7 @@ class ObjectUtils {
 			if(swapped.hasOwnProperty(value)) throw new Error(`Tried to swap object with duplicate values. {${swapped[value]}:${value}} and {${key}:${value}} `)
 
 			let numerical = parseFloat(key)
-			key = isNumber(numerical) && !isNaN(numerical) ? numerical : key
+			key = isNumber(numerical) &amp;&amp; !isNaN(numerical) ? numerical : key
 
 			swapped[value] = key
 			return swapped
@@ -225,20 +258,37 @@ class ObjectUtils {
   Exports
 ########################## */
 
-let clean = 		ObjectUtils.clean,
-	exclude = 		ObjectUtils.extend,
-	extend = 		ObjectUtils.extend,
-	isSwappable = 	ObjectUtils.isSwappable
+let extend = 		ObjectUtils.extend,
 	merge = 		ObjectUtils.merge,
+	mergeDeep =		ObjectUtils.mergeDeep,
 	omit = 			ObjectUtils.omit,
 	setDeep =		ObjectUtils.setDeep,
 	size =			ObjectUtils.size,
-	swap = 			ObjectUtils.swap
+	swap = 			ObjectUtils.swap,
+	isSwappable = 	ObjectUtils.isSwappable
 
 export default ObjectUtils
 
 export {
 	ObjectUtils,
-	clean, exclude, extend, isSwappable, 
-	omit, merge, setDeep, size, swap
-}
+	extend, merge, mergeDeep, omit, 
+	setDeep, size, swap, isSwappable
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Feb 23 2018 22:11:34 GMT-0500 (Eastern Standard Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
