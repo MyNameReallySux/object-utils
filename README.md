@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **This package has moved.** It now lives in [beautiful-code-monorepo](https://github.com/MyNameReallySux/beautiful-code-monorepo) as [`packages/object-utils`](https://github.com/MyNameReallySux/beautiful-code-monorepo/tree/main/packages/object-utils). This repository is archived; the modern 1.0 rewrite ships from the monorepo.
+
 # Object Utils
 
 This is a simple, object utility library. This is intended to be used imported via Node.js (or a bundler like Webpack for client side).
